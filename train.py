@@ -7,6 +7,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error, r2_score
 import os
 import pandas as pd
+
 DATA_DIR = 'data/raw/housing.csv'
 TARGET_COLUMN = 'median_house_value'
 
