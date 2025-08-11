@@ -35,5 +35,5 @@ jobs:
         run: |
           python train.py
 
-      - name: Deploy (Dummy Step)
+      - name: Deploy
         run: echo "Deployment Step Placeholder"
