@@ -7,10 +7,23 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error, r2_score
 
 import pandas as pd
+DATA_DIR = 'data/raw/housing.csv'
 
-data = fetch_california_housing(as_frame=True)
-X = pd.DataFrame(data.data, columns=data.feature_names)
-y = data.target
+# data = fetch_california_housing(as_frame=True)
+# X = pd.DataFrame(data.data, columns=data.feature_names)
+# y = data.target
+
+if not os.path.exists(DATA_DIR):
+    raise FileNotFoundError(f"Data file not found at {DATA_DIR}. Please ensure the data is available.")
+
+# Load the dataset
+df = pd.read_csv(DATA_DIR)
+TARGET_COLUMN = 'median_house_value'
+if TARGET_COLUMN not in df.columns:
+    raise ValueError(f"Target column '{TARGET_COLUMN}' not found in the dataset.")
+X = df.drop(columns=[TARGET_COLUMN])
+y = df[TARGET_COLUMN]
+
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
