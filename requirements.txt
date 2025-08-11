@@ -4,3 +4,5 @@ pandas
 scikit-learn
 joblib
 flask
+prometheus_flask_exporter
+flask_pydantic
