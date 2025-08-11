@@ -5,9 +5,10 @@ from sklearn.datasets import fetch_california_housing
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error, r2_score
-
+import os
 import pandas as pd
 DATA_DIR = 'data/raw/housing.csv'
+TARGET_COLUMN = 'median_house_value'
 
 # data = fetch_california_housing(as_frame=True)
 # X = pd.DataFrame(data.data, columns=data.feature_names)
@@ -18,6 +19,9 @@ if not os.path.exists(DATA_DIR):
 
 # Load the dataset
 df = pd.read_csv(DATA_DIR)
+df = df.dropna()
+if "ocean_proximity" in df.columns:
+    df = df.drop(columns=["ocean_proximity"])
 TARGET_COLUMN = 'median_house_value'
 if TARGET_COLUMN not in df.columns:
     raise ValueError(f"Target column '{TARGET_COLUMN}' not found in the dataset.")
