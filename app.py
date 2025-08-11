@@ -47,6 +47,13 @@ metrics.info('app_info', 'Housing Price Prediction App', version='1.0.0')
 def predict():
     data = request.json
     prediction = model.predict(np.array(data['input']).reshape(1,-1))
+
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute('INSERT INTO predictions (timestamp, input_data, prediction) VALUES (?, ?, ?)',
+                   (datetime.now().isoformat(), json.dumps(data['input']), float(prediction)))
+    conn.commit()
+    conn.close()
     return jsonify({'prediction':prediction.tolist()})
 
 @app.route('/metric_summary', methods=['GET'])
@@ -54,7 +61,7 @@ def metric_summary():
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute('SELECT COUNT(*) FROM predictions')
-    count = cursor.fetchone()[0]
+    count = cursor.fetchone()
     
     cursor.execute('SELECT AVG(prediction) FROM predictions')
     avg_prediction = cursor.fetchone()[0]
@@ -83,4 +90,4 @@ def retrain():
     return jsonify({'message': 'Model retrained successfully.'})
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0')
+    app.run(debug=True, host='0.0.0.0' )
