@@ -1,11 +1,11 @@
-import mlflow 
+import mlflow
 import mlflow.sklearn
 from sklearn.linear_model import LinearRegression
 from sklearn.datasets import fetch_california_housing
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error, r2_score
-from utils import evaluate_model
+
 import pandas as pd
 
 data = fetch_california_housing(as_frame=True)
@@ -23,23 +23,46 @@ def train_and_log(model, model_name, params=None):
         model.fit(X_train, y_train)
         y_pred = model.predict(X_test)
         metrics = evaluate_model(y_test, y_pred)
-        
+
         mlflow.log_params(model.get_params() or params or {})
         mlflow.log_metrics(metrics)
-        
+
         mlflow.sklearn.log_model(model, "model", registered_model_name=model_name)
 
-        return metrics["mse"] , model_name
-        
         print(f"Model: {model_name}, MSE: {metrics['mse']}, R2: {metrics['r2_score']}")
 
+        return metrics["mse"] , model_name, model
+
+
+def evaluate_model(y_true, y_pred):
+    mse = mean_squared_error(y_true, y_pred)
+    r2 = r2_score(y_true, y_pred)
+
+    return {
+        'mse': mse,
+        'r2_score': r2
+    }
 
 
 # Train and log Linear Regression model
-lr_mse, lr_name = train_and_log(LinearRegression(), "LinearRegression")
-dt_mse, dt_name = train_and_log(DecisionTreeRegressor(), "DecisionTreeRegressor", params={"max_depth": 5})  
+lr_mse, lr_name, lr_model = train_and_log(LinearRegression(), "LinearRegression")
+dt_mse, dt_name, dt_model = train_and_log(DecisionTreeRegressor(), "DecisionTreeRegressor", params={"max_depth": 5})
 
 
-best_model_name = lr_name if lr_mse < dt_mse else dt_name
-best_model_mse = min(lr_mse, dt_mse)
+if lr_mse < dt_mse:
+    best_model_name = lr_name
+    best_model = lr_model
+    best_model_mse = lr_mse
+else:
+    best_model_name = dt_name
+    best_model = dt_model
+    best_model_mse = dt_mse
+
+
 print(f"Best Model: {best_model_name}, MSE: {best_model_mse}")
+
+
+import joblib
+
+# Save the model
+joblib.dump(best_model, 'model.joblib')
